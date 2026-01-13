@@ -3,35 +3,41 @@ using UnityEngine;
 
 public class TowerAttack : MonoBehaviour
 {
-    [SerializeField] private GameObject bullet;
-    [SerializeField] private Transform spawnPoint;
-    [SerializeField] private float speed = 2f;
-    [SerializeField] private float aliveTime = 3f;
-    [SerializeField] private float attackInterval = 1f;
-    [SerializeField] private float damage;
+        [SerializeField] private GameObject bullet;
+        [SerializeField] private Transform spawnPoint;
+        [SerializeField] private float attackInterval = 1f;
 
-    void Start()
-    {
-        
-    }
+        private bool canAttack = false;
+        private Coroutine attackRoutine;
 
-    void Update()
-    {
-        
-    }
-
-    private IEnumerator Attack()
-    {
-        yield return new WaitForSeconds(attackInterval);
-
-        GameObject bulletInstance = Instantiate(bullet, spawnPoint);
-        Rigidbody rb = bulletInstance.GetComponent<Rigidbody>();
-
-        if (rb != null)
+        private IEnumerator Attack()
         {
-            rb.angularVelocity = spawnPoint.forward * speed;
+            while (canAttack)
+            {
+                Instantiate(bullet, spawnPoint.position, spawnPoint.rotation);
+                yield return new WaitForSeconds(attackInterval);
+            }
         }
 
-        Destroy(bulletInstance, aliveTime);
-    }
+        public void StartAttacking()
+        {
+            if(!canAttack)
+            {
+                canAttack = true;
+                attackRoutine = StartCoroutine(Attack());
+            }
+        }
+
+        public void StopAttacking()
+        {
+            if (canAttack)
+            {
+                canAttack = false;
+                if (attackRoutine != null)
+                {
+                    StopCoroutine(attackRoutine);
+                    attackRoutine = null;
+                }
+            }
+        }
 }
